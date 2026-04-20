@@ -53,3 +53,13 @@ plt.savefig("outputs/figures/rent_vs_student_proxy.png")
 
 # optional: still display it
 plt.show()
+
+plt.hist(df["median_weekly_rent"], bins=5)
+plt.xlabel("Rent")
+plt.ylabel("Frequency")
+plt.title("Distribution of Median Weekly Rent")
+plt.show()
+
+df["group"] = df["intl_student_proxy"].apply(
+    lambda x: "High" if x > df["intl_student_proxy"].median() else "Low"
+)
