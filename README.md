@@ -1,3 +1,4 @@
+
 # Melbourne Property Prices & Student Populations
 
 ## Research Question
@@ -14,139 +15,166 @@ How do rental prices differ across Melbourne suburbs with higher concentrations 
 * `outputs/` → Generated figures and tables
 * `requirements.txt` → Required Python packages
 
----
+## Core Scripts
 
-## Data Sources
+01_load_data.py      # Loads raw ABS datasets
+02_clean_data.py     # Cleans and standardizes suburb-level variables
+03_merge_data.py     # Merges all cleaned datasets
+04_analysis.py       # Main econometric analysis and model estimation
+Data Sources
 
-### 1. Property Price Data
+All data is sourced from the Australian Bureau of Statistics (ABS) 2021 Census.
 
-* Source: ABS 2021 Census
-* Variable: Median weekly rent
-* Geography: Suburb (SAL)
+Required files (to be placed in data/raw/):
 
-### 2. Student Population Data
+2021Census_G02_VIC_SA2.csv → Median rent and household size
+2021Census_G15_VIC_SA2.csv → University attendance
+2021Census_G09F_VIC_SA2.csv → Country of birth (non-citizens proxy)
+2021Census_G36_VIC_SA2.csv → Dwelling structure
 
-* Source: ABS 2021 Census
-* Variables extracted:
+Additional file included in this repository:
 
-  * Share attending university
-  * Share of non-citizens
+manual_rent.csv → Precompiled median rent values (used due to extraction issues from ABS tables)
+Key Variables
+Outcome Variable
+Median weekly rent
+Main Treatment Variable
+International student concentration proxy
+Proxy Construction
 
-### International Student Proxy
+Because suburb-level international student data is unavailable directly, the proxy is defined as:
 
-[
-\text{International Student Proxy} = \text{University Student Share} \times \text{Non-Citizen Share}
-]
+International Student Proxy = (University Student Share) × (Non-Citizen Share)
 
-Due to the absence of direct suburb-level data on international students, this study constructs a proxy variable by interacting the proportion of university students with the proportion of non-citizens.
+This proxy captures suburbs with both high tertiary attendance and larger overseas-born non-citizen populations.
 
----
+## Methodology
+Initial Comparison:
 
-## How to Run the Project
+Suburbs are grouped into:
 
-### Step 1: Set up environment
+High international student concentration
+Low international student concentration
 
-```bash
+Basic difference-in-means and OLS regression:
+
+Price_i = β₀ + β₁ HighStudent_i + ε_i
+
+Expanded Econometric Model Sequence:
+
+The updated analysis file (04_analysis.py) estimates five progressively richer models:
+
+Model 1 (M1): Baseline
+
+Tests the raw bivariate association between the proxy and rent.
+
+Model 2 (M2): Component Decomposition
+
+Separately estimates:
+
+University attendance share
+Overseas-born non-citizen share
+Model 3 (M3): Preferred Specification
+
+Adds location controls through Melbourne ring dummies:
+
+Inner ring
+Middle ring
+Outer ring
+
+This controls for CBD proximity and major location bias.
+
+Model 4 (M4): Non-Linearity Test
+
+Adds a quadratic proxy term to test whether effects vary at different concentrations.
+
+Model 5 (M5): Interaction / Heterogeneity
+
+Tests whether proxy effects differ across suburb rings.
+
+Interpretation of Model Progression
+M1 (R² = 0.51): Proxy alone explains substantial rent variation
+M3 (R² = 0.52): Ring dummies add little explanatory power
+Interpretation: The proxy already captures much of Melbourne’s CBD gradient because high-student suburbs are disproportionately inner-city
+M4 (R² = 0.64): Significant improvement suggests non-linear effects
+Conclusion: Student concentration influences rent, but effects are not purely linear and may intensify or diminish depending on suburb type
+
+
+
+# How to Reproduce the Full Pipeline
+
+## 1. Set up environment
 python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-```
+2. Add raw data
 
----
+Download the required ABS Census files and place them in:
 
-### Step 2: Add raw data
-
-Manually download datasets and place them into:
-
-```
 data/raw/
-```
 
-* ABS General Community Profile (GCP) Excel files for selected Melbourne suburbs were downloaded from the ABS 2021 Census website
-* Files are loaded using `pandas.read_excel()` in `code/01_load_data.py`
+Ensure filenames match exactly.
 
-Example:
-
-```python
-df = pd.read_excel("data/raw/caulfield_gcp_sal.xlsx", header=None)
-```
-
-* All raw files remain unmodified in `data/raw/`
-
-* Median rent values were manually transcribed into:
-
-```
-data/raw/manual_rent.csv
-```
-
-because automated extraction from Excel was unreliable.
-
----
-
-### Step 3: Run scripts in order
-
-```bash
+## 2. Run the pipeline
 python code/01_load_data.py
 python code/02_clean_data.py
 python code/03_merge_data.py
 python code/04_analysis.py
-```
 
----
+## 3. Outputs
 
-## Output
+After running:
 
-* Clean dataset: `data/clean/merged_dataset.csv`
-* Figures: `outputs/figures/`
+Clean dataset:
+data/clean/merged_dataset.csv
+Regression outputs:
+outputs/regression_results.csv
+outputs/model_comparisons.csv
+Figures:
+outputs/figures/
+outputs/regression_diagnostics.png
 
----
 
-## Methodology
+## Optional Analysis Files
 
-* Treatment variable: International student proxy
-* Outcome variable: Median weekly rent
+* These are supplementary and not required for core replication:
 
-Suburbs are split into:
-
-* High international student concentration
-* Low international student concentration
-
-Conceptually:
-
-[
-Price_i = \beta_0 + \beta_1 \cdot HighStudent_i + \epsilon_i
-]
-
----
+EDA_analysis_expanded.ipynb → Exploratory data analysis
+Primary_Econometrics_analysis.ipynb → Extended regression analysis
+04_analysis.py → Preferred streamlined reproducible model sequence
 
 ## Key Findings
+* The international student proxy is positively associated with rental prices in baseline models
+* Much of this relationship overlaps with inner-city location effects
+* Location controls only marginally improve explanatory power
+* Non-linear modelling substantially improves fit
+* Some traditionally high-student suburbs do not uniformly exhibit the highest rents
+* The relationship between student populations and rent is more complex than simple supply-demand assumptions suggest
 
-* There is **no strong positive relationship** between international student concentration and rental prices
-* Suburbs like Clayton and Carlton have high student proxy values but do not have significantly higher rents
-* Some lower-proxy suburbs (e.g., Doncaster, Williamstown) have comparable rent levels
-* correlation is negative (-0.2)
+  
+## Assumptions & Limitations
+* International student presence is approximated using a proxy
+* Proxy validity depends on overlap between university attendance and non-citizen populations
+* Suburb-level matching may introduce classification noise
+* Census data is cross-sectional (2021 only)
+* Omitted variables remain possible (income, amenities, housing stock quality)
 
-This suggests that international student concentration alone is not a major determinant of rental prices in this sample.
+Software Used:
 
----
+Python 3.x
+pandas
+numpy
+matplotlib
+seaborn
+statsmodels
+Summary
 
-## Assumptions & Notes
+This project moves beyond simple suburb comparisons by implementing a structured econometric sequence that:
 
-* Proxy assumes international students are:
+Measures baseline rent differences
+Tests proxy validity
+Controls for geographic confounding
+Evaluates non-linear effects
+Assesses structural heterogeneity
 
-  * more likely to attend university
-  * more likely to be non-citizens
-
-* Suburbs are matched across datasets using suburb names
-
-* Analysis is based on 2021 Census data
-
----
-
-## Software Used
-
-* Python 3.x
-* pandas
-* numpy
-* matplotlib
-* seaborn
+Overall, Melbourne rental prices appear related to international student concentration, but this relationship is strongly intertwined with broader urban geography and is unlikely to be purely causal.
