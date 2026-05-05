@@ -55,6 +55,69 @@ def extract_proxy_metrics(filepath):
     }
 
 
+def clean_census_table(df, table_name):
+    """
+    Clean a census table DataFrame.
+    - Drop duplicate rows
+    - Handle missing values (fill numeric with median, categorical with mode)
+    - Standardize column names (lowercase, replace spaces with underscores)
+    - Ensure SA2_CODE_2021 is string for consistency
+    """
+    print(f"Cleaning {table_name}...")
+
+    # Drop duplicates
+    df = df.drop_duplicates()
+
+    # Standardize column names
+    df.columns = df.columns.str.lower().str.replace(' ', '_').str.replace('-', '_')
+
+    # Ensure SA2_CODE_2021 is string
+    if 'sa2_code_2021' in df.columns:
+        df['sa2_code_2021'] = df['sa2_code_2021'].astype(str)
+
+    # Handle missing values
+    for col in df.columns:
+        if df[col].dtype in ['int64', 'float64']:
+            # Fill numeric with median
+            df[col] = df[col].fillna(df[col].median())
+        else:
+            # Fill categorical with mode (most frequent)
+            if not df[col].mode().empty:
+                df[col] = df[col].fillna(df[col].mode()[0])
+
+    print(f"  - Original shape: {df.shape}")
+    print(f"  - After cleaning: {df.shape}")
+    print(f"  - Columns: {list(df.columns)}")
+    return df
+
+
+# ===== Clean census tables =====
+print("Cleaning ABS Census 2021 tables...")
+data_dir = 'data/raw'
+files = {
+    'G02': '2021Census_G02_VIC_SA2.csv',
+    'G09F': '2021Census_G09F_VIC_SA2.csv',
+    'G09H': '2021Census_G09H_VIC_SA2.csv',
+    'G15': '2021Census_G15_VIC_SA2.csv'
+}
+
+clean_dir = 'data/clean'
+os.makedirs(clean_dir, exist_ok=True)
+
+for table_name, filename in files.items():
+    filepath = os.path.join(data_dir, filename)
+    if os.path.exists(filepath):
+        df = pd.read_csv(filepath)
+        cleaned_df = clean_census_table(df, table_name)
+        output_path = os.path.join(clean_dir, f'cleaned_{filename}')
+        cleaned_df.to_csv(output_path, index=False)
+        print(f"Saved cleaned {table_name} to {output_path}\n")
+    else:
+        print(f"File {filepath} not found. Skipping {table_name}.\n")
+
+print("Census tables cleaned.\n")
+
+
 files = [
     f for f in glob.glob("data/raw/*_gcp_sal.xlsx")
     if "vic_gcp_sal.xlsx" not in f.lower()
