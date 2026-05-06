@@ -15,13 +15,8 @@ How do rental prices differ across Melbourne suburbs with higher concentrations 
 * `outputs/` → Generated figures and tables
 * `requirements.txt` → Required Python packages
 
-## Core Scripts
-
-01_load_data.py      # Loads raw ABS datasets
-02_clean_data.py     # Cleans and standardizes suburb-level variables
-03_merge_data.py     # Merges all cleaned datasets
-04_analysis.py       # Main econometric analysis and model estimation
-Data Sources
+---
+## Data Sources
 
 All data is sourced from the Australian Bureau of Statistics (ABS) 2021 Census.
 
@@ -35,12 +30,6 @@ Required files (to be placed in data/raw/):
 Additional file included in this repository:
 
 manual_rent.csv → Precompiled median rent values (used due to extraction issues from ABS tables)
-Key Variables
-Outcome Variable
-Median weekly rent
-Main Treatment Variable
-International student concentration proxy
-Proxy Construction
 
 Because suburb-level international student data is unavailable directly, the proxy is defined as:
 
@@ -48,8 +37,10 @@ International Student Proxy = (University Student Share) × (Non-Citizen Share)
 
 This proxy captures suburbs with both high tertiary attendance and larger overseas-born non-citizen populations.
 
+## Dwelling size
+Source: * `2021Census_G36_VIC_SA2.csv` — Dwelling structure by suburb (ABS 2021)
+
 ## Methodology
-Initial Comparison:
 
 Suburbs are grouped into:
 
@@ -62,7 +53,7 @@ Price_i = β₀ + β₁ HighStudent_i + ε_i
 
 Expanded Econometric Model Sequence:
 
-The updated analysis file (04_analysis.py) estimates five progressively richer models:
+The file (04_analysis.py) estimates five progressively richer models:
 
 Model 1 (M1): Baseline
 
@@ -74,6 +65,7 @@ Separately estimates:
 
 University attendance share
 Overseas-born non-citizen share
+
 Model 3 (M3): Preferred Specification
 
 Adds location controls through Melbourne ring dummies:
@@ -100,6 +92,7 @@ M4 (R² = 0.64): Significant improvement suggests non-linear effects
 Conclusion: Student concentration influences rent, but effects are not purely linear and may intensify or diminish depending on suburb type
 
 
+---
 
 # How to Reproduce the Full Pipeline
 
@@ -107,7 +100,8 @@ Conclusion: Student concentration influences rent, but effects are not purely li
 python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-2. Add raw data
+
+Add raw data
 
 Download the required ABS Census files and place them in:
 
@@ -142,6 +136,7 @@ outputs/regression_diagnostics.png
 EDA_analysis_expanded.ipynb → Exploratory data analysis
 Primary_Econometrics_analysis.ipynb → Extended regression analysis
 04_analysis.py → Preferred streamlined reproducible model sequence
+
 
 ## Key Findings
 * The international student proxy is positively associated with rental prices in baseline models
