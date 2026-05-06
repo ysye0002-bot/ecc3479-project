@@ -14,19 +14,26 @@ How do rental prices differ across Melbourne suburbs with higher concentrations 
 * `outputs/` → Generated figures and tables
 * `requirements.txt` → Required Python packages
 
+
+
 ---
+## Set up environment
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
 
 ## Data Sources
 
 ### 1. Property Price Data
 
-* Source: ABS 2021 Census
+* Source: `2021Census_G02_VIC_SA2.csv` — Median rent and household size (ABS 2021)
 * Variable: Median weekly rent
 * Geography: Suburb (SAL)
 
+
 ### 2. Student Population Data
 
-* Source: ABS 2021 Census
+* Source: `2021Census_G15_VIC_SA2.csv` — University enrolment by suburb (ABS 2021)
 * Variables extracted:
 
   * Share attending university
@@ -34,15 +41,21 @@ How do rental prices differ across Melbourne suburbs with higher concentrations 
 
 ### International Student Proxy
 
+* Source: `2021Census_G09F_VIC_SA2.csv` — Country of birth, persons: Australia-born total (ABS 2021)
 [
 \text{International Student Proxy} = \text{University Student Share} \times \text{Non-Citizen Share}
 ]
 
 Due to the absence of direct suburb-level data on international students, this study constructs a proxy variable by interacting the proportion of university students with the proportion of non-citizens.
 
+## Dwelling size
+Source: * `2021Census_G36_VIC_SA2.csv` — Dwelling structure by suburb (ABS 2021)
+
 ---
 
 ## How to Run the Project
+
+
 
 ### Step 1: Set up environment
 
@@ -90,6 +103,9 @@ python code/01_load_data.py
 python code/02_clean_data.py
 python code/03_merge_data.py
 python code/04_analysis.py
+`EDA_analysis_expanded.ipynb` — Exploratory data analysis across 517 Melbourne SA2 suburbs
+`Primary_Econometrics_analysis.ipynb` — Primary analysis file: builds clean data, runs 5 OLS models, produces regression table and diagnostics
+
 ```
 
 ---
@@ -98,6 +114,7 @@ python code/04_analysis.py
 
 * Clean dataset: `data/clean/merged_dataset.csv`
 * Figures: `outputs/figures/`
+* `regression_diagnostics.png` — Residual and partial regression plots from Model 3
 
 ---
 
@@ -150,3 +167,9 @@ This suggests that international student concentration alone is not a major dete
 * numpy
 * matplotlib
 * seaborn
+
+## Reproducing the Analysis
+
+1. Place all raw CSVs into `data/`
+2. Run `EDA_analysis_expanded.ipynb` top to bottom
+3. Run `Primary_Econometrics_analysis.ipynb` top to bottom — this writes `data/clean/merged_dataset.csv` and all outputs automatically
