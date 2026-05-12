@@ -173,3 +173,50 @@ Evaluates non-linear effects
 Assesses structural heterogeneity
 
 Overall, Melbourne rental prices appear related to international student concentration, but this relationship is strongly intertwined with broader urban geography and is unlikely to be purely causal.
+
+  * more likely to attend university
+  * more likely to be non-citizens
+
+* Suburbs are matched across datasets using suburb names
+
+* Analysis is based on 2021 Census data
+
+---
+
+## Software Used
+
+* Python 3.x
+* pandas
+* numpy
+* matplotlib
+* seaborn
+
+## Reproducing the Analysis
+
+1. Place all raw CSVs into `data/`
+2. Run `EDA_analysis_expanded.ipynb` top to bottom
+3. Run `Primary_Econometrics_analysis.ipynb` top to bottom — this writes `data/clean/merged_dataset.csv` and all outputs automatically
+
+# ## Reproducing the Robustness workbook
+
+### Run order
+
+1. `code/data_cleaning.ipynb` — reads raw ABS data, outputs `data/clean/cleaned_abs_suburbs_expanded.csv`
+2. `code/primary_analysis.ipynb` — reads clean data, outputs primary results
+3. `code/robustness_checks.ipynb` — reads clean data, outputs robustness table and figures to `outputs/`
+
+### Requirements
+
+Install dependencies with:
+
+```bash
+pip install -r requirements.txt
+```
+
+### Key outputs
+
+- `outputs/robustness_table.csv` — full robustness table
+- `outputs/figures/robustness_forest_plot.png` — forest plot
+- `outputs/figures/influence_diagnostics.png` — Cook's D and DFBETA
+- `outputs/figures/jackknife_plot.png` — jackknife stability plot
+>>>>>>> a861645 (Update robustness notebook, output diagnostics, and README)
